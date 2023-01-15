@@ -1,16 +1,17 @@
-FROM golang:1.7
+FROM golang:1.19-alpine
 
-COPY . /go/src/github.com/microservices-demo/payment/
+COPY . /src
+WORKDIR /src
 
-RUN go get -u github.com/FiloSottile/gvt
-RUN cd /go/src/github.com/microservices-demo/payment/ && gvt restore
+RUN go get ./... && \
+    go mod vendor
+RUN go build cmd/paymentsvc/main.go && \
+    mv main /payment
 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /app github.com/microservices-demo/payment/cmd/paymentsvc
-
-FROM alpine:3.4
+FROM alpine:3.17.1
 
 WORKDIR /
-COPY --from=0 /app /app
+COPY --from=0 /payment /payment
 
 ENV	SERVICE_USER=myuser \
 	SERVICE_UID=10001 \
@@ -19,11 +20,11 @@ ENV	SERVICE_USER=myuser \
 
 RUN	addgroup -g ${SERVICE_GID} ${SERVICE_GROUP} && \
 	adduser -g "${SERVICE_NAME} user" -D -H -G ${SERVICE_GROUP} -s /sbin/nologin -u ${SERVICE_UID} ${SERVICE_USER} && \
-	chmod +x /app && \
-    chown -R ${SERVICE_USER}:${SERVICE_GROUP} /app
+	chmod +x /payment && \
+    chown -R ${SERVICE_USER}:${SERVICE_GROUP} /payment
 
 USER ${SERVICE_USER}
 
-CMD ["/app", "-port=8080"]
+CMD ["/payment", "-port=8080"]
 
 EXPOSE 8080
