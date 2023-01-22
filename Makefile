@@ -1,4 +1,5 @@
-NAME = weaveworksdemos/payment
+NAME ?= sqwatch-demo/payment
+
 INSTANCE = payment
 
 .PHONY: default copy test
@@ -10,8 +11,9 @@ copy:
 	docker cp $(INSTANCE):/app $(shell pwd)/app
 	docker rm $(INSTANCE)
 
+release: TAG ?= latest
 release:
-	docker build -t $(NAME) -f ./docker/payment/Dockerfile-release .
+	docker build -t $(NAME):$(TAG) -f ./docker/payment/Dockerfile .
 
 test:
 	GROUP=weaveworksdemos COMMIT=$(COMMIT) ./scripts/build.sh
