@@ -11,9 +11,10 @@ copy:
 	docker cp $(INSTANCE):/app $(shell pwd)/app
 	docker rm $(INSTANCE)
 
+release: BUILDER ?= minikube image
 release: TAG ?= latest
 release:
-	docker build -t $(NAME):$(TAG) -f ./docker/payment/Dockerfile .
+	$(BUILDER) build -t $(NAME):$(TAG) -f ./docker/payment/Dockerfile .
 
 test:
 	GROUP=weaveworksdemos COMMIT=$(COMMIT) ./scripts/build.sh
