@@ -1,4 +1,4 @@
-NAME ?= sqwatch-demo/payment
+NAME ?= sqwatchio/payment
 
 INSTANCE = payment
 
